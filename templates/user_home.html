@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Bandas e Músicas</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .band { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        h3 { margin-top: 0; }
+        ul { padding-left: 20px; }
+        .actions { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Olá, {{ session['username'] }}</h1>
+    <a href="{{ url_for('logout') }}">Sair</a>
+
+    <h2>Adicionar Nova Banda</h2>
+    <form action="{{ url_for('add_band') }}" method="POST">
+        <input type="text" name="band_name" placeholder="Nome da Banda" required>
+        <button type="submit">Adicionar</button>
+    </form>
+
+    <h2>Minhas Bandas</h2>
+    {% if bands %}
+        {% for band, musics in bands.items() %}
+            <div class="band">
+                <h3>{{ band }}</h3>
+
+                <div class="actions">
+                    <!-- Editar Banda -->
+                    <details>
+                        <summary>Editar Nome</summary>
+                        <form action="{{ url_for('edit_band', old_name=band) }}" method="POST">
+                            <input type="text" name="new_band_name" placeholder="Novo nome da banda" required>
+                            <button type="submit">Guardar</button>
+                        </form>
+                    </details>
+
+                    <!-- Apagar Banda -->
+                    <form action="{{ url_for('delete_band', band_name=band) }}" method="get" onsubmit="return confirm('Tem a certeza que quer apagar esta banda?');" style="margin-top: 5px;">
+                        <button type="submit">Apagar Banda</button>
+                    </form>
+                </div>
+
+                <h4>Músicas</h4>
+                {% if musics %}
+                    <ul>
+                        {% for music in musics %}
+                            <li>
+                                {{ music }}
+                                <details>
+                                    <summary>Editar</summary>
+                                    <form action="{{ url_for('edit_music', band_name=band, music_index=loop.index0) }}" method="POST">
+                                        <input type="text" name="new_music_name" placeholder="Novo nome" required>
+                                        <button type="submit">Guardar</button>
+                                    </form>
+                                </details>
+                                <form action="{{ url_for('delete_music', band_name=band, music_index=loop.index0) }}" method="get" style="display:inline;" onsubmit="return confirm('Apagar esta música?');">
+                                    <button type="submit">Apagar</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Sem músicas ainda.</p>
+                {% endif %}
+
+                <details>
+                    <summary>Adicionar Música</summary>
+                    <form action="{{ url_for('add_music', band_name=band) }}" method="POST">
+                        <input type="text" name="music_name" placeholder="Nome da Música" required>
+                        <button type="submit">Adicionar</button>
+                    </form>
+                </details>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Não há bandas ainda.</p>
+    {% endif %}
+</body>
+</html>
